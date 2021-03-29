@@ -9,7 +9,8 @@ safe = 1
 discount = 0.9
 stepSize = 0.5
 Q_values = {}
-weights = [1,1,1]
+Policy = {}
+weights = [1,3,5]
 
 
 def features(state):
@@ -38,8 +39,8 @@ def bestA(state, A): #return action from set with highest Q for state
     for i in A:
         a = i
         if (state, a) in Q_values:
-            if Q_value[(s,a)] > bestQ:
-                bestQ = Q_value[(s,a)]
+            if Q_value[(state,a)] > bestQ:
+                bestQ = Q_value[(state,a)]
                 currentBest = a
     return [bestQ, currentBest]
 
@@ -48,11 +49,14 @@ def takeaction(s, A, R):
     global Q_values
     global stepSize
     global weights
-    print(s)
+    #print(s)
     temp = bestA(s, A)
     bestQ = temp[0]
     a = temp[1] 
 
+    if goal_test(s):
+        Q_values[(s, Exit)] = 100
+        return initial_state
     step = random.randrange(0, 2, 1)
     if step > safe:
         if (s,a) not in Q_values:
@@ -70,7 +74,7 @@ def takeaction(s, A, R):
     else:
         step = random.randrange(0, len(A), 1)
         a = A[step]
-        print(a)
+        #print(a)
         if (s,a) not in Q_values:
             Q_values[(s,a)] = 0.0
         newState = a.state_transf(s)
@@ -92,3 +96,17 @@ def getQValues(S, A):
             for actions in A:
                 Q_values[states, actions] = 0.0
     return Q_values
+
+def getPolicy(S, A):
+    global Q_values
+    global Policy
+    for state in S:
+        bestAction = A[0]
+        bestQ = Q_values(S[0],A[0])
+        for action in A:
+            temp = Q_values[state, action]
+            if temp > bestQ:
+                bestQ = temp
+                bestAction = action
+        Policy[state] = action
+    return Policy
